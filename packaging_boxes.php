@@ -34,17 +34,14 @@ $order = array(
   45 => 1
 );
 
-// test
-#$productSizes = array_reverse($productSizes, true);
-#$
-#$sort($productSizes)
-
+// check method and sort. This will greatly effect the packaging.
 if ($method === 1) {
   asort($productSizes);
 } else if($method === 2) {
   arsort($productSizes);
 }
 
+// run
 runPackagingAlgo($order, $productSizes);
 
 function runPackagingAlgo($order, $productSizes) {
