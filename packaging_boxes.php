@@ -46,7 +46,7 @@ runPackagingAlgo($order, $productSizes);
 
 function runPackagingAlgo($order, $productSizes) {
   // initialize variables
-  $maxBoxSize = 15000;
+  $boxMaxSize = 15000;
   $boxes = array();
   $totalItems = array_sum($order);
   $boxIndex = 1;
@@ -58,10 +58,15 @@ function runPackagingAlgo($order, $productSizes) {
   for($i = 1; $i <= $totalItems; $i++) {
     // go over the sizes and fill in from smallest to biggest
     foreach($productSizes as $productId => $productSize) {
-      // try to group
-      for($j=1; $j <= $initialOrder[$productId]; $j++) {
-        if (isset($order[$productId]) && $order[$productId] > 0) {
-          if ($productSize + $boxVolumeMeter > 15000) {
+      // we make sure to have a valid product inside the order
+      if (isset($order[$productId])) {
+        // try to group
+        for($j=1; $j <= $initialOrder[$productId]; $j++) {
+          if ($order[$productId] == 0) {
+            continue; // done with this product
+          }
+
+          if ($productSize + $boxVolumeMeter > $boxMaxSize) {
             // need new box
             $boxVolumeMeter = $productSize;
             $boxIndex += 1;
@@ -77,10 +82,10 @@ function runPackagingAlgo($order, $productSizes) {
 
           $boxes["box_".$boxIndex][$productId] += 1;
           $order[$productId] -= 1;
-        }
-      }
-    }
-  }
+        } // group loop
+      } // check if product is in order
+    } // product size loop
+  } // items loop
 
   if (array_sum($order) != 0) {
     echo "We have a problem, the order was not fully packaged. \n";
@@ -90,9 +95,10 @@ function runPackagingAlgo($order, $productSizes) {
   // print the packaging
   echo "\n\n Packaging contents: \n";
   foreach($boxes as $boxName => $boxContents) {
-    echo $boxName."\n";
+    echo "Label: $boxName \n";
+    echo "Box Items: ".array_sum($boxContents)." \n";
     echo "Box size: ".computeBoxVolume($boxContents, $productSizes)." cm3 \n";
-    echo "Box items:\n";
+    echo "Box contents:\n";
     print_r($boxContents);
     echo "\n\n";
   }
