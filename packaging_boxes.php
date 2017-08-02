@@ -8,6 +8,13 @@
  * @author Marius Iordache
  */
 
+/**
+ * 1 = produces boxes with contents more balanced accross the boxes
+ * 2 = tries to maximize the space usage however last box can be almost empty
+ * @var integer
+ */
+$method = 1;
+
 // initialize variables
 $productSizes = array(
   45 => 500,
@@ -18,10 +25,7 @@ $productSizes = array(
   40 => 12000
 );
 
-// test
-#$productSizes = array_reverse($productSizes, true);
-
-$initialOrder = $order = array(
+$order = array(
   40 => 1,
   33 => 4,
   35 => 3,
@@ -30,54 +34,71 @@ $initialOrder = $order = array(
   45 => 1
 );
 
-$maxBoxSize = 15000;
-$boxes = array();
-$totalItems = array_sum($order);
-$boxIndex = 1;
-$boxVolumeMeter = 0;
+// test
+#$productSizes = array_reverse($productSizes, true);
+#$
+#$sort($productSizes)
 
-// we assume that product size will never be bigger than 15000 cm3
-// loop over the items in order to start packaging process
-for($i = 1; $i <= $totalItems; $i++) {
-  // go over the sizes and fill in from smallest to biggest
-  foreach($productSizes as $productId => $productSize) {
-    // try to group
-    for($j=1; $j <= $initialOrder[$productId]; $j++) {
-      if (isset($order[$productId]) && $order[$productId] > 0) {
-        if ($productSize + $boxVolumeMeter > 15000) {
-          // need new box
-          $boxVolumeMeter = $productSize;
-          $boxIndex += 1;
-        } else {
-          // add to the box
-          $boxVolumeMeter += $productSize;
+if ($method === 1) {
+  asort($productSizes);
+} else if($method === 2) {
+  arsort($productSizes);
+}
+
+runPackagingAlgo($order, $productSizes);
+
+function runPackagingAlgo($order, $productSizes) {
+  // initialize variables
+  $maxBoxSize = 15000;
+  $boxes = array();
+  $totalItems = array_sum($order);
+  $boxIndex = 1;
+  $boxVolumeMeter = 0;
+  $initialOrder = $order;
+
+  // we assume that product size will never be bigger than 15000 cm3
+  // loop over the items in order to start packaging process
+  for($i = 1; $i <= $totalItems; $i++) {
+    // go over the sizes and fill in from smallest to biggest
+    foreach($productSizes as $productId => $productSize) {
+      // try to group
+      for($j=1; $j <= $initialOrder[$productId]; $j++) {
+        if (isset($order[$productId]) && $order[$productId] > 0) {
+          if ($productSize + $boxVolumeMeter > 15000) {
+            // need new box
+            $boxVolumeMeter = $productSize;
+            $boxIndex += 1;
+          } else {
+            // add to the box
+            $boxVolumeMeter += $productSize;
+          }
+
+          // adjust the counters
+          if (!isset($boxes["box_".$boxIndex][$productId])) {
+            $boxes["box_".$boxIndex][$productId] = 0;
+          }
+
+          $boxes["box_".$boxIndex][$productId] += 1;
+          $order[$productId] -= 1;
         }
-
-        // adjust the counters
-        if (!isset($boxes["box_".$boxIndex][$productId])) {
-          $boxes["box_".$boxIndex][$productId] = 0;
-        }
-
-        $boxes["box_".$boxIndex][$productId] += 1;
-        $order[$productId] -= 1;
       }
     }
   }
-}
 
-if (array_sum($order) != 0) {
-  echo "We have a problem, the order was not fully packaged. \n";
-  print_r($order);
-}
+  if (array_sum($order) != 0) {
+    echo "We have a problem, the order was not fully packaged. \n";
+    print_r($order);
+  }
 
-// print the packaging
-echo "\n\n Packaging contents: \n"
-foreach($boxes as $boxName => $boxContents) {
-  echo $boxName."\n";
-  echo "Box size: ".computeBoxVolume($boxContents, $productSizes)." cm3 \n";
-  echo "Box items:\n";
-  print_r($boxContents);
-  echo "\n\n";
+  // print the packaging
+  echo "\n\n Packaging contents: \n";
+  foreach($boxes as $boxName => $boxContents) {
+    echo $boxName."\n";
+    echo "Box size: ".computeBoxVolume($boxContents, $productSizes)." cm3 \n";
+    echo "Box items:\n";
+    print_r($boxContents);
+    echo "\n\n";
+  }
 }
 
 /**
