@@ -63,9 +63,9 @@ function runPackagingAlgo($order, $productSizes) {
         // try to group
         for($j=1; $j <= $initialOrder[$productId]; $j++) {
           if ($order[$productId] == 0) {
-            continue; // done with this product
+            break; // done with this product
           }
-
+          // packaging into box now
           if ($productSize + $boxVolumeMeter > $boxMaxSize) {
             // need new box
             $boxVolumeMeter = $productSize;
@@ -74,13 +74,13 @@ function runPackagingAlgo($order, $productSizes) {
             // add to the box
             $boxVolumeMeter += $productSize;
           }
-
           // adjust the counters
           if (!isset($boxes["box_".$boxIndex][$productId])) {
             $boxes["box_".$boxIndex][$productId] = 0;
           }
-
+          // increase packaged box product counter
           $boxes["box_".$boxIndex][$productId] += 1;
+          // decreate order product counter
           $order[$productId] -= 1;
         } // group loop
       } // check if product is in order
