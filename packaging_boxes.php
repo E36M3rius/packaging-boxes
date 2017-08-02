@@ -59,7 +59,7 @@ function runPackagingAlgo($order, $productSizes) {
     // go over the sizes and fill in from smallest to biggest
     foreach($productSizes as $productId => $productSize) {
       // we make sure to have a valid product inside the order
-      if (isset($order[$productId])) {
+      if (isset($order[$productId]) && $order[$productId] > 0) {
         // try to group
         for($j=1; $j <= $initialOrder[$productId]; $j++) {
           if ($order[$productId] == 0) {
